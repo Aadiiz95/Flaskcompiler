@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Code Compiler</title>
+    <!-- Linking CodeMirror CSS -->
+    <link rel="stylesheet" href="/codemirror-5.65.16/lib/codemirror.css">
+    <link rel="stylesheet" href="/codemirror-5.65.16/theme/material.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center; /* Center the container horizontally */
+            align-items: center; /* Center the container vertically */
+            min-height: 100vh; /* Full viewport height */
+            color: #040008;
+          
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            background: #1c1c1c;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 100%; /* Take full width */
+            max-width: 1300px;
+            height: auto; /* Adjust container height */
+          
+        }
+
+        .title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #f3ebeb;
+        }
+
+        .title-bar .center-heading {
+            text-align: center;
+            flex-grow: 1; /* Take remaining space */
+            color: #fff;
+            margin: 0;
+        }
+
+        .title-bar select {
+            background: #8dd4f5;
+            color: #141414;
+            border: 1px solid #300303;
+            border-radius: 4px;
+            padding: 8px;
+            margin-right: 20px;
+        }
+
+        .title-bar button {
+            background: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .title-bar button:hover {
+            background: #218838;
+        }
+
+        .title-bar button i {
+            margin-left: 5px;
+        }
+
+        .main-content {
+            display: flex;
+            margin-top: 20px;
+            
+        }
+
+        .editor-section {
+            flex: 3;
+            display: flexbox;
+            flex-direction: column;
+            height: 480px; /* Adjusted height for code editor to fit 26 lines */
+            background-color: #282c34; /* Background color for the editor section */
+            border-radius: 8px;
+            padding: 10px;
+            font-size: larger;
+            min-height: 100%;
+            
+            margin-top: 20px;
+        }
+
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-left: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            background: #f7f5f5;
+            color: #fff;
+            border: 1px solid #140101;
+            border-radius: 2px;
+            
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #code {
+            
+            height: 100%; /* Ensure code editor takes the full height of the editor section */
+        }
+
+        #input {
+            height: 20vh; /* Smaller specific height for input textarea */
+            color: #161515;
+        }
+
+        #output {
+            margin-top: 2px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #776967;
+            height: 50vh; /* Specific height for output container */
+        }
+
+        #output pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #161515;
+            margin-bottom: 0;
+            height: 100%;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+
+        label {
+            color: hsl(0, 12%, 90%);
+            margin-bottom: 5px;
+        }
+    </style>
+    <!-- Linking CodeMirror JS -->
+    <script src="/codemirror-5.65.16/lib/codemirror.js"></script>
+    <script src="/codemirror-5.65.16/mode/clike/clike.js"></script>
+    <script src="/codemirror-5.65.16/mode/python/python.js"></script>
+    <script src="/codemirror-5.65.16/mode/javascript/javascript.js"></script>
+    <script src="/codemirror-5.65.16/mode/java/java.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="title-bar">
+            <select id="language" name="language">
+                <option value="Cpp" selected>C/C++</option>
+                <option value="Java">Java</option>
+                <option value="Python">Python</option>
+            </select>
+            <h2 class="center-heading">Online Compiler For C/C++ | Python | Java</h2>
+            <button type="button" onclick="compileCode()">Run <i class="fas fa-play"></i></button>
+        </div>
+        <div class="main-content">
+            <div class="editor-section">
+                <textarea id="code" name="code"></textarea>
+            </div>
+            <div class="sidebar">
+                <div>
+                    <label for="input">Input</label>
+                    <textarea id="input" name="input"></textarea>
+                </div>
+                <div id="output">
+                    <label for="outputText">Output</label>
+                    <pre id="outputText"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize CodeMirror editor
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "text/x-c++src",
+            theme: "material"
+        });
+
+        function compileCode() {
+            var code = editor.getValue();
+            var input = document.getElementById("input").value; // Get input from textarea
+            var lang = document.getElementById("language").value; // Get selected language
+
+            fetch("/compile", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    code: code,
+                    input: input, // Include input in the JSON payload
+                    lang: lang
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("outputText").textContent = data.output;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
